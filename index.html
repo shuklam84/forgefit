@@ -3152,7 +3152,9 @@ const ExPanel = {
     const key  = name.toLowerCase();
     const data = EXLIB[key];
 
-    document.getElementById('ep-gif-area').innerHTML = '<div class="ep-spinner"></div>';
+    // Show fallback SVG immediately — always visible, no async dependency
+    const gifArea = document.getElementById('ep-gif-area');
+    gifArea.innerHTML = this._fallbackHTML(name);
     document.getElementById('ep-name').textContent = name;
 
     // Find exercise in program for pills (sets/reps/weight)
@@ -3189,20 +3191,18 @@ const ExPanel = {
     document.getElementById('ex-panel-overlay').classList.add('show');
     document.getElementById('ex-panel').classList.add('show');
 
-    fetchExImage(name).then(result => this._renderGifArea(result, name));
-  },
-
-  _renderGifArea(result, name) {
-    const area = document.getElementById('ep-gif-area');
-    if (!area) return;
-    if (result && result.url) {
-      area.innerHTML = `
-        <img class="ep-demo-img" src="${result.url}" alt="${name}" loading="lazy"
-             onerror="this.parentElement.innerHTML=ExPanel._fallbackHTML('${name.replace(/'/g,"\\'")}')">
-        <div class="ep-img-src">via wger.de</div>`;
-    } else {
-      area.innerHTML = this._fallbackHTML(name);
-    }
+    // Try to upgrade to a real photo in the background
+    fetchExImage(name).then(result => {
+      if (result && result.url) {
+        const area = document.getElementById('ep-gif-area');
+        if (!area) return;
+        const safeName = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        area.innerHTML = `<img class="ep-demo-img" src="${result.url}" alt="${name}" loading="lazy"
+          onerror="this.style.display='none';this.nextElementSibling&&(this.nextElementSibling.style.display='none');document.getElementById('ep-gif-area').innerHTML=ExPanel._fallbackHTML('${safeName}')">
+          <div class="ep-img-src">via wger.de</div>`;
+      }
+      // if fallback, keep the SVG already shown — nothing to do
+    }).catch(() => {/* keep SVG fallback */});
   },
 
   _fallbackHTML(name) {
