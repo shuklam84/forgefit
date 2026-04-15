@@ -2043,7 +2043,7 @@ function buildExCard(ex, exIdx, sectionKey) {
     <div class="ex-card-top">
       <div class="ex-idx">${exIdx + 1}</div>
       <div class="ex-info">
-        <button class="ex-name-btn" onclick="ExPanel.open(${JSON.stringify(ex.name)})">${ex.name}</button>
+        <button class="ex-name-btn" onclick="ExPanel.open('${ex.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')">${ex.name}</button>
         <div class="ex-pills">
           ${ex.sets ? `<span class="pill">${ex.sets} sets</span>` : ''}
           <span class="pill">${ex.reps}</span>
