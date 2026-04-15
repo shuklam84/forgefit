@@ -2831,6 +2831,14 @@ async function fetchExImage(name) {
     const sugg  = (sData.suggestions || []);
     if (!sugg.length) return _cacheImg(ckey, { fallback: true });
 
+    // Relevance check: only use the image if the suggestion shares meaningful
+    // words with our exercise name. wger.de always returns *something* even
+    // for a total mismatch, so we must filter those out ourselves.
+    const suggName = (sugg[0].value || '').toLowerCase();
+    const exWords  = stripped.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+    const matched  = exWords.filter(w => suggName.includes(w)).length;
+    if (matched === 0) return _cacheImg(ckey, { fallback: true });
+
     const baseId = sugg[0].data.base_id;
 
     // Step 2 — fetch images for that base exercise
@@ -3196,21 +3204,7 @@ const ExPanel = {
     document.getElementById('ex-panel-overlay').classList.add('show');
     document.getElementById('ex-panel').classList.add('show');
 
-    // Try to upgrade to a real photo in the background
-    fetchExImage(name).then(result => {
-      if (result && result.url) {
-        const area = document.getElementById('ep-gif-area');
-        if (!area) return;
-        const safeName = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        // Wrap in block div so badge appears BELOW the image, not beside it
-        area.innerHTML = `<div style="width:100%">
-          <img class="ep-demo-img" src="${result.url}" alt="${name}" loading="lazy"
-            onerror="document.getElementById('ep-gif-area').innerHTML=ExPanel._fallbackHTML('${safeName}')">
-          <div class="ep-img-src">via wger.de</div>
-        </div>`;
-      }
-      // if fallback, keep the SVG already shown — nothing to do
-    }).catch(() => {/* keep SVG fallback */});
+    // SVG fallback already rendered above — no wger.de fetch needed
   },
 
   _fallbackHTML(name) {
