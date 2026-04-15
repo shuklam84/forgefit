@@ -1264,10 +1264,11 @@ a { color: inherit; text-decoration: none; }
 
 .ep-demo-img {
   width: 100%;
-  max-height: 260px;
-  object-fit: cover;
+  max-height: 240px;
+  object-fit: contain;
   display: block;
-  border-radius: var(--radius);
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: #f0ece8;  /* light bg so dark line-art illustrations are visible */
 }
 
 /* Spinner */
@@ -1297,11 +1298,15 @@ a { color: inherit; text-decoration: none; }
   color: var(--t3);
 }
 .ep-img-src {
-  font-size: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--t3);
-  text-align: center;
-  padding: 4px 0 8px;
-  letter-spacing: 0.05em;
+  text-align: right;
+  padding: 4px 8px 6px;
+  background: var(--bg-2);
+  border-radius: 0 0 var(--radius) var(--radius);
 }
 
 /* Animated elements inside fallback SVGs */
@@ -3197,9 +3202,12 @@ const ExPanel = {
         const area = document.getElementById('ep-gif-area');
         if (!area) return;
         const safeName = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        area.innerHTML = `<img class="ep-demo-img" src="${result.url}" alt="${name}" loading="lazy"
-          onerror="this.style.display='none';this.nextElementSibling&&(this.nextElementSibling.style.display='none');document.getElementById('ep-gif-area').innerHTML=ExPanel._fallbackHTML('${safeName}')">
-          <div class="ep-img-src">via wger.de</div>`;
+        // Wrap in block div so badge appears BELOW the image, not beside it
+        area.innerHTML = `<div style="width:100%">
+          <img class="ep-demo-img" src="${result.url}" alt="${name}" loading="lazy"
+            onerror="document.getElementById('ep-gif-area').innerHTML=ExPanel._fallbackHTML('${safeName}')">
+          <div class="ep-img-src">via wger.de</div>
+        </div>`;
       }
       // if fallback, keep the SVG already shown — nothing to do
     }).catch(() => {/* keep SVG fallback */});
